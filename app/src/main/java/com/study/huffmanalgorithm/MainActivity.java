@@ -10,10 +10,20 @@ import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.PriorityQueue;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG="Huffman";
+
+
+
+
+
+    public static PriorityQueue<Node> queue; // 우선순위 큐
+    public static HashMap<Character, String> charToCode=new HashMap<Character, String>(); // 문자에 따른 코드 값 해시맵 할당
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
