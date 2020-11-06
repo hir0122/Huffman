@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -26,40 +27,17 @@ public class MainActivity extends AppCompatActivity {
 
     String hexstring;
 
-    String[] hexa2bin = {"0000", "0001", "0010", "0011",
-
-            "0100", "0101", "0110", "0111",
-
-            "1000", "1001", "0010", "0011",
-
-            "1100", "1101", "1110", "1111"};
-
-    String[] bin2HEXA =	{"0", "1", "2", "3",
-
-            "4", "5", "6", "7",
-
-            "8", "9", "A", "B",
-
-            "C", "D", "E", "F"};
-
-    String[] bin2hexa =	{"0", "1", "2", "3",
-
-            "4", "5", "6", "7",
-
-            "8", "9", "a", "b",
-
-            "c", "d", "e", "f"};
-
-    String[][] binary;
-    String binary_to_hex="";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        hexstring=bitmap_to_hex();
-        Log.d(TAG, "hexstring : "+hexstring);
+        Resources res=getResources();
+        Bitmap receipt= BitmapFactory.decodeResource(res,R.drawable.sample2);
+        hexstring=BitmapToString(receipt);
+        //Log.d(TAG, "hexstring : "+hexstring);
+//        hexstring=bitmap_to_hex();
+//        Log.d(TAG, "hexstring : "+hexstring);
 
 //        binary = new String[stringHex.length()][bin2hexa.length];
 
@@ -103,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
             temp.frequency=dictionary.get(c);
             queue.add(temp);
             number++;
-            Log.d(TAG, "character : " + temp.character + "\nfrequency : "+temp.frequency);
+            //Log.d(TAG, "character : " + temp.character + "\nfrequency : "+temp.frequency);
         }
 
         Log.d(TAG, "number : " + number);
@@ -117,39 +95,47 @@ public class MainActivity extends AppCompatActivity {
 //        String result="";
 //        for(int i=0; i<hexstring.length(); i++){
 //            result=result+charToCode.get(hexstring.charAt(i))+" ";
-//            Log.d(TAG, "result : " + result);
+//            Log.d(TAG+i, "결과 result : " + result);
 //        }
 
    }
 
 
-    String bitmap_to_hex() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 8;
+//    String bitmap_to_hex() {
+//        BitmapFactory.Options options = new BitmapFactory.Options();
+//        options.inSampleSize = 8;
+//
+//        Resources res=getResources();
+//        Bitmap receipt= BitmapFactory.decodeResource(res,R.drawable.sample2);
+//
+//        //Log.d(TAG, "bitmap 변환 : " + receipt);
+//        int size = receipt.getRowBytes() * receipt.getHeight();
+//        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//
+//        receipt.compress(Bitmap.CompressFormat.JPEG, 90, stream);
+//        //Log.d(TAG, "압축?? : " + receipt.compress(Bitmap.CompressFormat.JPEG, 90, stream));
+//        byte[] receiptbyte = stream.toByteArray();
+//
+//        Log.d(TAG, "receiptbyte : " + receiptbyte);
+//
+//        String receiptbyteString=new String(receiptbyte);
+//        Log.d(TAG, "receiptbyteString : " + receiptbyteString);
+//
+//        //String hexstring = toHex(receiptbyte);
+//
+//        BigInteger bi = new BigInteger(1, receiptbyte);
+//        Log.d(TAG, "toHex : " + String.format("%0" + (receiptbyte.length << 1) + "X", bi));
+//        //hexstring=  String.format("%0" + (receiptbyte.length << 1) + "X", bi);
+//
+//        return String.format("%0" + (receiptbyte.length << 1) + "X", bi);
+//    }
 
-        Resources res=getResources();
-        Bitmap receipt= BitmapFactory.decodeResource(res,R.drawable.sample2);
-
-        //Log.d(TAG, "bitmap 변환 : " + receipt);
-        int size = receipt.getRowBytes() * receipt.getHeight();
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
-        receipt.compress(Bitmap.CompressFormat.JPEG, 90, stream);
-        //Log.d(TAG, "압축?? : " + receipt.compress(Bitmap.CompressFormat.JPEG, 90, stream));
-        byte[] receiptbyte = stream.toByteArray();
-
-        Log.d(TAG, "receiptbyte : " + receiptbyte);
-
-        String receiptbyteString=new String(receiptbyte);
-        Log.d(TAG, "receiptbyteString : " + receiptbyteString);
-
-        //String hexstring = toHex(receiptbyte);
-
-        BigInteger bi = new BigInteger(1, receiptbyte);
-        Log.d(TAG, "toHex : " + String.format("%0" + (receiptbyte.length << 1) + "X", bi));
-        //hexstring=  String.format("%0" + (receiptbyte.length << 1) + "X", bi);
-
-        return String.format("%0" + (receiptbyte.length << 1) + "X", bi);
+    public static String BitmapToString(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 70, baos);
+        byte[] bytes = baos.toByteArray();
+        String temp = Base64.encodeToString(bytes, Base64.DEFAULT);
+        return temp;
     }
 
 //    int hex_to_string(){
