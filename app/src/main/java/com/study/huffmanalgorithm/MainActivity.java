@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         else
             dictionary.put(temp,1);
 
-        //Log.d(TAG, "dictionary : " + dictionary);
+       //Log.d(TAG, "dictionary : " + dictionary);
     }
     // 모든 노드를 우선순위 큐에 추가함으로써 트리 그룹 형성
         queue=new PriorityQueue<Node>(hexstring.length(), new FrequencyComparator());
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
             temp.frequency=dictionary.get(c);
             queue.add(temp);
             number++;
-            //Log.d(TAG, "character : " + temp.character + "\nfrequency : "+temp.frequency);
+            Log.d(TAG, "character : " + temp.character + "\nfrequency : "+temp.frequency);
         }
 
         Log.d(TAG, "number : " + number);
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         options.inSampleSize = 8;
 
         Resources res=getResources();
-        Bitmap receipt= BitmapFactory.decodeResource(res,R.drawable.sample);
+        Bitmap receipt= BitmapFactory.decodeResource(res,R.drawable.sample2);
 
         //Log.d(TAG, "bitmap 변환 : " + receipt);
         int size = receipt.getRowBytes() * receipt.getHeight();
@@ -138,7 +138,11 @@ public class MainActivity extends AppCompatActivity {
         //Log.d(TAG, "압축?? : " + receipt.compress(Bitmap.CompressFormat.JPEG, 90, stream));
         byte[] receiptbyte = stream.toByteArray();
 
-        //Log.d(TAG, "receiptbyte : " + receiptbyte);
+        Log.d(TAG, "receiptbyte : " + receiptbyte);
+
+        String receiptbyteString=new String(receiptbyte);
+        Log.d(TAG, "receiptbyteString : " + receiptbyteString);
+
         //String hexstring = toHex(receiptbyte);
 
         BigInteger bi = new BigInteger(1, receiptbyte);
