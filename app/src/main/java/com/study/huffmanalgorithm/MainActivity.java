@@ -53,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
         // Huffman Encoding
         String encodeData = encode(hexstring);
         Log.d(TAG, "Encoded data : " + encodeData);
+        Double size= (encodeData.length())/1024.0;
+        Log.d(TAG, "크기 : " + size);
 
         // Huffman Decoding
         String decodeData = decode(encodeData);
@@ -175,6 +179,14 @@ public class MainActivity extends AppCompatActivity {
                 .stream()
                 .filter(entry -> value.equals(entry.getValue()))
                 .map(Map.Entry::getKey);
+    }
+
+    void binary_to_byte(String encoding) {
+        int i = 0;
+        for (char c : encoding.toCharArray()) {
+            i++;
+
+        }
     }
 
 
