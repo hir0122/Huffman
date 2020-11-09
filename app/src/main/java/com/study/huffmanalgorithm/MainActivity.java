@@ -63,14 +63,15 @@ public class MainActivity extends AppCompatActivity {
 
         Resources res = getResources();
         Bitmap receipt = BitmapFactory.decodeResource(res, R.drawable.sample);
-        hexstring = bitmap_to_hex(receipt);
+        bitmap_to_hex(receipt);
 
         Log.d(TAG, "Original data : " + this.hexstring);
 
         // Huffman Encoding
         String encodeData = encode(hexstring);
         Log.d(TAG, "Encoded data : " + encodeData);
-        Double size= (encodeData.length())/1024.0;
+
+        Double size= ((encodeData.length())/1024.0)/8.0;
         Log.d(TAG, "크기 : " + size);
 
         // Huffman Decoding
@@ -200,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
         int size = receipt.getRowBytes() * receipt.getHeight();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        receipt.compress(Bitmap.CompressFormat.JPEG, 90, stream);
+        receipt.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         //Log.d(TAG, "압축?? : " + receipt.compress(Bitmap.CompressFormat.JPEG, 90, stream));
         byte[] receiptbyte = stream.toByteArray();
 
@@ -212,7 +213,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "toHex : " + String.format("%0" + (receiptbyte.length << 1) + "X", bi));
         //hexstring=  String.format("%0" + (receiptbyte.length << 1) + "X", bi);
 
-        return String.format("%0" + (receiptbyte.length << 1) + "X", bi);
+        hexstring=String.format("%0" + (receiptbyte.length << 1) + "X", bi);
+        return hexstring;
     }
 
 //    public String BitmapToString(Bitmap bitmap) {
