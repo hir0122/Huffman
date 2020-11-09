@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     public static HashMap<Character, String> charToCode=new HashMap<Character, String>(); // 문자에 따른 코드 값 해시맵 할당
 
     String hexstring;
+    Node node=new Node();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,29 +36,6 @@ public class MainActivity extends AppCompatActivity {
         Resources res=getResources();
         Bitmap receipt= BitmapFactory.decodeResource(res,R.drawable.sample2);
         hexstring=BitmapToString(receipt);
-        //Log.d(TAG, "hexstring : "+hexstring);
-//        hexstring=bitmap_to_hex();
-//        Log.d(TAG, "hexstring : "+hexstring);
-
-//        binary = new String[stringHex.length()][bin2hexa.length];
-
-//        //hex를 2진수로
-//        for (int i=0; i< stringHex.length(); i++){
-//            for(int j=0; j <bin2hexa.length; j++) {
-//                if (stringHex.substring(i, i + 1).compareTo(bin2hexa[j]) == 0) {
-//                    binary[i][j] = hexa2bin[j];
-//                    Log.d(TAG, "확인 : " + binary[i][j]);
-//                }
-//                else if (stringHex.substring(i, i + 1).compareTo(bin2HEXA[j]) == 0){
-//                    binary[i][j] = hexa2bin[j];
-//                    Log.d(TAG, "확인 : " + binary[i][j]);
-//                }
-//            }
-//            binary_to_hex=binary_to_hex+binary[i];
-//            //Log.d(TAG, "2진수 : " + list + " ");
-//        }
-//
-//        Log.d(TAG, "2진수 : " + binary_to_hex);
 
     HashMap <Character,Integer> dictionary=new HashMap<Character, Integer>(); // 각각의 문자에 대한 빈도수 체크
 
@@ -76,10 +54,9 @@ public class MainActivity extends AppCompatActivity {
 
     //문자와 그 빈도수가 저장된 각각의 모든 노드들을 우선순위 큐에 삽입
         for(Character c:dictionary.keySet()){
-            Node temp=new Node();
-            temp.character=c;
-            temp.frequency=dictionary.get(c);
-            queue.add(temp);
+            node.character=c;
+            node.frequency=dictionary.get(c);
+            queue.add(node);
             number++;
             //Log.d(TAG, "character : " + temp.character + "\nfrequency : "+temp.frequency);
         }
@@ -87,16 +64,18 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "number : " + number);
 
         //전체 노드 개수만큼 재배열하여 우선순위 큐 상에서의 노드 재배열
-        Node root=huffmanCoding(number);
-        Log.d(TAG, "Node root : " + root);
+        //Node root=new Node();
+        huffmanCoding(number);
+        Log.d(TAG, "onCreate 함수 안 huffmanCoding(number); : " + node);
         //변수 길이 코드를 생성
-        traversal(root, new String());
+        traversal(node, new String());
 
 //        String result="";
 //        for(int i=0; i<hexstring.length(); i++){
-//            result=result+charToCode.get(hexstring.charAt(i))+" ";
+//            result=result+charTbcvoCode.get(hexstring.charAt(i))+" ";
 //            Log.d(TAG+i, "결과 result : " + result);
 //        }
+
 
    }
 
@@ -130,12 +109,27 @@ public class MainActivity extends AppCompatActivity {
 //        return String.format("%0" + (receiptbyte.length << 1) + "X", bi);
 //    }
 
-    public static String BitmapToString(Bitmap bitmap) {
+    public String BitmapToString(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 70, baos);
         byte[] bytes = baos.toByteArray();
         String temp = Base64.encodeToString(bytes, Base64.DEFAULT);
         return temp;
+    }
+
+    public Node huffmanCoding(int n){
+
+        // 각각의 문자 빈도수에 따라서 트리를 건축하는 메소드
+        for(int i=0; i<n-1; i++){
+            node.right=queue.poll();
+            node.left=queue.poll();
+            node.frequency=node.right.frequency+node.left.frequency;
+            queue.add(node);
+        }
+
+        node=queue.poll();
+        Log.d(TAG, "huffmanCoding 함수 안 queue.poll() : " + queue.poll());
+        return queue.poll();
     }
 
 //    int hex_to_string(){
@@ -150,18 +144,7 @@ public class MainActivity extends AppCompatActivity {
 //        return String.format("%0" + (bytes.length << 1) + "X", bi);
 //    }
 
-    public static Node huffmanCoding(int n){
-        // 각각의 문자 빈도수에 따라서 트리를 건축하는 메소드
-        for(int i=0; i<n-1; i++){
-            Node node=new Node();
-            node.right=queue.poll();
-            node.left=queue.poll();
-            node.frequency=node.right.frequency+node.left.frequency;
-            queue.add(node);
-        }
-        Log.d(TAG, "result : " + queue.poll());
-        return queue.poll();
-    }
+
 
     //순회로 노드를 돌아 코드를 입력
    public static void traversal(Node n, String s){
