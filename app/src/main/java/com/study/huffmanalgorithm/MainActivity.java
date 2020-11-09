@@ -1,83 +1,183 @@
 package com.study.huffmanalgorithm;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG="Huffman";
-
-    public static PriorityQueue<Node> queue; // 우선순위 큐
-    public static HashMap<Character, String> charToCode=new HashMap<Character, String>(); // 문자에 따른 코드 값 해시맵 할당
+    private static final String TAG = "Huffman";
 
     String hexstring;
-    Node node=new Node();
 
+    private static Map<Character, String> prefixCodeTable = new HashMap<>();    // Binary PrefixCode by Character (HashMap)
+
+    // Node of Huffman Tree
+    static class Node implements Comparable<Node> {
+        char cData;
+        int frequency;
+        Node left, right;
+
+        Node() {
+        }
+
+        Node(char cData, int frequency) {
+            this.cData = cData;
+            this.frequency = frequency;
+        }
+
+        // For Sorting priorityQueue
+        @Override
+        public int compareTo(Node node) {
+            return frequency - node.frequency;
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Resources res=getResources();
-        Bitmap receipt= BitmapFactory.decodeResource(res,R.drawable.sample2);
-        hexstring=BitmapToString(receipt);
+        Resources res = getResources();
+        Bitmap receipt = BitmapFactory.decodeResource(res, R.drawable.sample2);
+        hexstring = BitmapToString(receipt);
 
-    HashMap <Character,Integer> dictionary=new HashMap<Character, Integer>(); // 각각의 문자에 대한 빈도수 체크
+        Log.d(TAG, "Original data : " + this.hexstring);
 
-    for(int i=0; i<hexstring.length(); i++){ // dictionary에 A, B, C, D, E, F, 0~9까지 빈도수가 들어간다
-        char temp=hexstring.charAt(i);
-        if(dictionary.containsKey(temp)) // 현재 문자가 이미 1번 이상 들어가 있다면 1 증가
-            dictionary.put(temp,dictionary.get(temp)+1);
-        else
-            dictionary.put(temp,1);
+        // Huffman Encoding
+        String encodeData = encode(hexstring);
+        Log.d(TAG, "Encoded data : " + encodeData);
 
-       //Log.d(TAG, "dictionary : " + dictionary);
+        // Huffman Decoding
+        String decodeData = decode(encodeData);
+        Log.d(TAG, "Decoded data : " + decodeData + "\n");
+
+        // Print Report
+        int originDataByteSize = hexstring.getBytes(StandardCharsets.UTF_8).length;
+        Log.d(TAG, "Original data size : " + originDataByteSize * 8 + "Bit (" + originDataByteSize + "Byte)");
+        int encodeDataByteSize = encodeData.length() % 8 == 0 ? encodeData.length() / 8 : encodeData.length() / 8 + 1;
+        Log.d(TAG, "Encoded data size : " + encodeData.length() + "bit (" + encodeDataByteSize + "Byte)");
     }
-    // 모든 노드를 우선순위 큐에 추가함으로써 트리 그룹 형성
-        queue=new PriorityQueue<Node>(hexstring.length(), new FrequencyComparator());
-    int number=0;
 
-    //문자와 그 빈도수가 저장된 각각의 모든 노드들을 우선순위 큐에 삽입
-        for(Character c:dictionary.keySet()){
-            node.character=c;
-            node.frequency=dictionary.get(c);
-            queue.add(node);
-            number++;
-            //Log.d(TAG, "character : " + temp.character + "\nfrequency : "+temp.frequency);
+    // Encoding method
+    public static String encode(String data) {
+        // Get Frequency by Character
+        Map<Character, Integer> charFreq = new HashMap<>();
+        for (char c : data.toCharArray()) {
+            if (!charFreq.containsKey(c)) {
+                charFreq.put(c, 1);
+            } else {
+                int no = charFreq.get(c);
+                charFreq.put(c, ++no);
+            }
+        }
+        Log.d(TAG, "Frequency by Character : " + charFreq);
+
+        // Build Huffman Tree
+        PriorityQueue<Node> priorityQueue = new PriorityQueue<>();
+        Set<Character> keySet = charFreq.keySet();
+        for (char c : keySet) {
+            Node node = new Node(c, charFreq.get(c));
+            priorityQueue.offer(node);      // Add priorityQueue by char's freq
+        }
+        Node rootNode = buildTree(priorityQueue);       // Recursive Call
+
+        // Set Prefix Code by Character
+        Log.d(TAG, "Prefix Code Table");
+        setPrefixCode(rootNode, "");            // Recursive Call
+
+        // Convert Origin data to Prefix code
+        StringBuilder sb = new StringBuilder();
+        for (char c : data.toCharArray()) {
+            sb.append(prefixCodeTable.get(c));
         }
 
-        Log.d(TAG, "number : " + number);
+        return sb.toString();
+    }
 
-        //전체 노드 개수만큼 재배열하여 우선순위 큐 상에서의 노드 재배열
-        //Node root=new Node();
-        huffmanCoding(number);
-        Log.d(TAG, "onCreate 함수 안 huffmanCoding(number); : " + node);
-        //변수 길이 코드를 생성
-        traversal(node, new String());
+    // Decoding method
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static String decode(String encodeData) {
+        StringBuilder sb = new StringBuilder();
+        String tmp = "";
+        for (char c : encodeData.toCharArray()) {
+            tmp += c;
 
-//        String result="";
-//        for(int i=0; i<hexstring.length(); i++){
-//            result=result+charTbcvoCode.get(hexstring.charAt(i))+" ";
-//            Log.d(TAG+i, "결과 result : " + result);
-//        }
+            if (prefixCodeTable.containsValue(tmp)) {
+                Stream<Character> keyStream = getKeysByValue(prefixCodeTable, tmp);
+                char key = keyStream.findFirst().get();
+                sb.append(key);
+                tmp = "";
+            }
+        }
+        return sb.toString();
+    }
+
+    // Build Huffman Tree Recursive method
+    public static Node buildTree(PriorityQueue<Node> priorityQueue) {
+        if (priorityQueue.size() == 1) {
+            return priorityQueue.poll();
+        } else {
+            Node leftNode = priorityQueue.poll();
+            Node rightNode = priorityQueue.poll();
+
+            Node sumNode = new Node();
+            sumNode.cData = '`';
+            sumNode.frequency = leftNode.frequency + rightNode.frequency;
+            sumNode.left = leftNode;
+            sumNode.right = rightNode;
+
+            priorityQueue.offer(sumNode);
+            return buildTree(priorityQueue);
+        }
+    }
+
+    // Set Prefix Code Recursive method
+    public static void setPrefixCode(Node node, String code) {
+        if (node == null) {
+            return;
+        }
+
+        if (node.cData != '`' && node.left == null && node.right == null) {
+            prefixCodeTable.put(node.cData, code);
+            Log.d(TAG,"- " + node.cData + "(" + node.frequency + ") = " + code);
+        } else {
+            setPrefixCode(node.left, code + '0');
+            setPrefixCode(node.right, code + '1');
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static <K, V> Stream<K> getKeysByValue(Map<K, V> map, V value) {
+        return map
+                .entrySet()
+                .stream()
+                .filter(entry -> value.equals(entry.getValue()))
+                .map(Map.Entry::getKey);
+    }
 
 
-   }
 
 
 //    String bitmap_to_hex() {
@@ -117,21 +217,6 @@ public class MainActivity extends AppCompatActivity {
         return temp;
     }
 
-    public Node huffmanCoding(int n){
-
-        // 각각의 문자 빈도수에 따라서 트리를 건축하는 메소드
-        for(int i=0; i<n-1; i++){
-            node.right=queue.poll();
-            node.left=queue.poll();
-            node.frequency=node.right.frequency+node.left.frequency;
-            queue.add(node);
-        }
-
-        node=queue.poll();
-        Log.d(TAG, "huffmanCoding 함수 안 queue.poll() : " + queue.poll());
-        return queue.poll();
-    }
-
 //    int hex_to_string(){
 //        int hex2dec = Integer.parseInt(bitmap_to_hex(), 16);
 //        Log.d(TAG, "toHex : " + hex2dec);
@@ -144,16 +229,4 @@ public class MainActivity extends AppCompatActivity {
 //        return String.format("%0" + (bytes.length << 1) + "X", bi);
 //    }
 
-
-
-    //순회로 노드를 돌아 코드를 입력
-   public static void traversal(Node n, String s){
-        if(n==null) return;
-        traversal(n.left,s+"0");
-        traversal(n.right,s+"1");
-        if(n.character!='\0'){
-            charToCode.put(n.character,s);
-        }
-
-    }
 }
