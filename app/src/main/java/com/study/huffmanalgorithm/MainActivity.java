@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         Resources res = getResources();
         Bitmap receipt = BitmapFactory.decodeResource(res, R.drawable.sample);
-        bitmap_to_hex(receipt);
+        hexstring=bitmap_to_hex(receipt);
 
         Log.d(TAG, "Original data : " + this.hexstring);
 
@@ -213,8 +213,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "toHex : " + String.format("%0" + (receiptbyte.length << 1) + "X", bi));
         //hexstring=  String.format("%0" + (receiptbyte.length << 1) + "X", bi);
 
-        hexstring=String.format("%0" + (receiptbyte.length << 1) + "X", bi);
-        return hexstring;
+        return String.format("%0" + (receiptbyte.length << 1) + "X", bi);
     }
 
 //    public String BitmapToString(Bitmap bitmap) {
